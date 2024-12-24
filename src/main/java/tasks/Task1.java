@@ -3,10 +3,11 @@ package tasks;
 import common.Person;
 import common.PersonService;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /*
 Задача 1
@@ -24,27 +25,14 @@ public class Task1 {
   }
 
   public List<Person> findOrderedPersons(List<Integer> personIds) {
-    // Видимо предполагается, что в personIds нет повторяющихся ID, тк метод findPersons уже может их вернуть в любом
-    // порядке и его никак не восстановить
     Set<Person> persons = personService.findPersons(personIds);
-    // Карта ID -> его порядковый номер в исходном списке
-    //    Map<Integer, Integer> idToOrder = new HashMap<>();
-    //    for (int i = 0; i < persons.size(); i++) {
-    //        idToOrder.put(personIds.get(i), i);
-    //    }
-    Map<Integer, Integer> idToOrder = IntStream.range(0, personIds.size())
-            .boxed()
-            .collect(Collectors.toMap(personIds::get, Function.identity()));
-    return persons.stream().sorted(Comparator.comparing(x -> idToOrder.get(x.id()))).collect(Collectors.toList());
+    Map<Integer, Person> idToPerson = persons.stream().collect(Collectors.toMap(Person::id, Function.identity()));
+    return personIds.stream().map(idToPerson::get).collect(Collectors.toList());
     /*
     СЛОЖНОСТЬ:
-    1) карта строится за O(n), тк получение элемента из списка по индексу O(1), вставка O(1),
-    т. к. хэш-функция хорошая (она равно самому значению int)
-
-    2) сортировка - в Java используется алгоритм Timsort с худшей сложностью n*log(n), на каждом шаге используется
-    получение элемента из карты за O(1)
-
-    3) Итого O(n*log(n)) (мы не испортили сложность стандартной сортировки)
+    1) карта строится за O(n), тк вставка в карту O(1), т. к. хэш-функция хорошая (она равно самому значению int)
+    2) список формируется за O(n), тк получение из карты O(1)
+    3) Итого O(n)
      */
   }
 }
